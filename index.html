@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <title>テキストをQRコードに変換</title>
+  <link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito&display=swap" rel="stylesheet">  
+  <meta name="description" content="貼り付けられたテキストをQRコードに変換します。" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style type="text/css">
+    body {
+      background-color: #eeeeee;
+      color: #333333;
+      margin-right: auto;
+      margin-left: auto;
+      font-family: 'Nunito', 'Kosugi Maru', sans-serif;
+    }
+    .nounderbar {
+      color: #333333;
+      text-decoration: none;
+    }
+    textarea{
+      width: 100%;
+      max-width: 100%;
+      height: calc( 1.3em * 5 );
+      line-height: 1.3;      
+    }
+    @media screen and (min-width: 481px) {
+      body{ 
+        width: 800px;
+      }
+    }
+    @media screen and (max-width: 480px) {
+      body{ 
+        width: 90%;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@latest/build/qrcode.min.js"></script>
+</head>
+<body>
+  <p>貼り付けられたテキストをQRコードに変換します。</p>
+  <p>
+  【入力】
+  <textarea id="input" placeholder="テキストを貼り付けてください。"></textarea>
+  <button onclick="pasteTextarea()">Paste</button>
+  <button onclick="clearTextarea()">Clear</button>
+  </p>
+  <p>
+  【出力】<br>
+  <canvas id="output" width="0" height="0"></canvas><br>
+  <button id="download" onclick="downloadQR()" style="display:none">保存</button>
+  </p>
+  <hr>
+  ©&nbsp;<span id="year"></span>&nbsp;<a href="https://henkan.site/" class="nounderbar">henkan.site</a>&nbsp;<a href="https://github.com/henkan-site/henkan-site.github.io" class="nounderbar">Powered by GitHub Pages</a>&nbsp;<a href="https://henkan.site/privacy.html" class="nounderbar">プライバシー</a>
+  <script>
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
+    const download = document.getElementById('download');
+    input.addEventListener('input', function (e) {
+      var text = e.target.value;
+      if (!text) {
+        clearQr();
+      } else {
+        writeQr(output, input.value.trim());
+      }
+    });
+    function clearQr(){
+      output.width = 0;
+      output.height = 0;
+      output.style.width = "0px";
+      output.style.height = "0px";
+      download.style.display = "none";
+    }
+    function writeQr(canvas, data){
+      download.style.display = "";
+      return new Promise((res, rej)=>{
+          QRCode.toCanvas(canvas, data, {
+              margin: 2,
+              scale: 4
+          }, (err, tg) => !err ? res(tg) : rej(err));
+      });
+    }
+    function pasteTextarea() {
+      input.value = "";
+      input.focus();
+      document.execCommand("paste");
+    }
+    function clearTextarea() {
+      input.value = "";
+      clearQr();
+      input.focus();
+    }
+    function downloadQR() {
+      if (output.msToBlob) { //for IE
+        var blob = output.msToBlob();
+        window.navigator.msSaveBlob(blob, 'qrcode.png');
+      } else {
+        var a = document.createElement('a');
+        a.href = output.toDataURL('image/png');
+        a.download = 'qrcode.png';
+        a.click();
+      }    
+    }
+    window.onload = function() {
+      input.focus();
+    }
+  </script>
+</body>
+</html>
